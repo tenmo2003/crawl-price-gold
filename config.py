@@ -2,7 +2,13 @@ import os
 from dotenv import load_dotenv
 
 # Load .env
-load_dotenv()
+ENV_PATH = "/secrets/.env"
+
+# Kiểm tra nếu file tồn tại, thì load từ file đó, nếu không thì dùng load_dotenv() mặc định
+if os.path.exists(ENV_PATH):
+    load_dotenv(dotenv_path=ENV_PATH)
+else:
+    load_dotenv()
 
 # Lấy các biến môi trường
 BOT_TOKEN = os.getenv("BOT_TOKEN")
