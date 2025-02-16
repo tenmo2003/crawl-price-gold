@@ -20,5 +20,8 @@ COPY . .
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 
+# Expose port 8080
+EXPOSE 8080
+
 # Define the command to run the script
 CMD ["python", "main.py"]
