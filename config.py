@@ -19,3 +19,7 @@ USER_TAG = os.getenv("USER_TAG", "")
 TELEGRAM_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
 URL = "https://www.24h.com.vn/gia-vang-hom-nay-c425.html"
 TIMEOUT = 15
+
+print("Loaded environment variables:")
+for key, value in os.environ.items():
+    print(f"{key}: {value}")
