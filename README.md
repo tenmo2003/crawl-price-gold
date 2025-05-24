@@ -33,6 +33,10 @@ This project is a bot that fetches gold prices from a website and sends the data
 
 Run the bot:
 ```sh
+python3 main.py
+```
+Or simple run:
+```sh
 python3 crawler-gold.py
 ```
 
