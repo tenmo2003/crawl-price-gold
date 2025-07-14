@@ -7,17 +7,17 @@ if __name__ == "__main__":
     print("Starting gold price bot...")
 
     buy_trend, data = fetch_gold_prices()
-    
+
     # Nếu lấy được data (danh sách có dữ liệu)
     if data:
         # Gửi bảng giá vàng
-        message = format_as_code_block(data)
+        message = format_as_code_block(data, buy_trend)
         send_to_telegram(message)
 
         # Gửi gợi ý mua/bán
         if buy_trend == 'increase':
             send_to_telegram(
-                f"Có nên mua vàng không má {USER_TAG} 🤔🤔🤔", 
+                f"Có nên mua vàng không má {USER_TAG} 🤔🤔🤔",
                 parse_mode=None
             )
         elif buy_trend == 'decrease':

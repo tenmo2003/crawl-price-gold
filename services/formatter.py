@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from utils.day_converter import convert_day_to_vietnamese
 
-def format_as_code_block(data):
+def format_as_code_block(data, buy_trend):
     """
     Format danh sách dữ liệu giá vàng dưới dạng bảng (code block).
     """
@@ -13,9 +13,11 @@ def format_as_code_block(data):
 
     header = ["Loại", "Mua", "Bán"]
     line = "+------+--------------+--------------+"
+    icon = "📈" if buy_trend == 'increase' else "📉"
 
     table = [
-        f"{current_time} {current_day} {current_date}: Giá vàng nè má ôi! 📉",
+        f"{current_time} {current_day} {current_date}",
+        f"Giá vàng trong nước: {icon}",
         "",
         line,
         f"| {header[0]:<4} | {header[1]:<12} | {header[2]:<12} |",
