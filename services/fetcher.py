@@ -1,17 +1,18 @@
+import re
 import requests
 from bs4 import BeautifulSoup
-from config import URL, TIMEOUT
+from config import DOMESTIC_URL, INTERNATIONAL_URL, TIMEOUT
 
-def fetch_gold_prices():
+def fetch_domestic_gold_prices():
     """
     Lấy dữ liệu giá vàng từ URL được cấu hình.
     Trả về bộ (buy_trend, data_list).
     - buy_trend: 'increase', 'decrease', hoặc None (nếu không xác định)
     - data_list: danh sách các row dữ liệu dạng [Loại, Mua, Bán]
     """
-    print("Fetching gold prices...")
+    print("Fetching domestic gold prices...")
     try:
-        response = requests.get(URL, timeout=TIMEOUT)
+        response = requests.get(DOMESTIC_URL, timeout=TIMEOUT)
         response.raise_for_status()
         print("Successfully fetched data from website.")
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -72,7 +73,12 @@ def fetch_gold_prices():
 
                 # Xác định xu hướng mua (buy_trend) nếu chưa có
                 if buy_trend is None and buy_symbol:
-                    buy_trend = 'increase' if buy_symbol == "▲" else 'decrease'
+                    if buy_symbol == "▲":
+                        buy_trend = "increase"
+                    elif buy_symbol == "▼":
+                        buy_trend = "decrease"
+                    else:
+                        buy_trend = "still"
 
                 # Ghép giá và xu hướng
                 buy_price_full = f"{buy_price} {buy_symbol}{buy_change}".strip()
@@ -87,6 +93,44 @@ def fetch_gold_prices():
         print("Data fetched successfully.")
         return buy_trend, data
 
+    except requests.RequestException as e:
+        print(f"Error connecting to the website: {e}")
+        return f"Lỗi khi kết nối đến trang web: {e}", []
+
+def fetch_international_gold_prices():
+    """
+    Lấy dữ liệu giá vàng quốc tế
+    Trả về bộ (buy_trend, data_list).
+    - current_price: giá hiện tại
+    - change: thay đổi giá
+    """
+    print("Fetching international gold prices...")
+    try:
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        }
+        response = requests.get(INTERNATIONAL_URL, timeout=TIMEOUT, headers=headers)
+        response.raise_for_status()
+        print("Successfully fetched data from website.")
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        current_price_panel = soup.find('div', class_='border-b border-ktc-borders')
+        if not current_price_panel:
+            print("No current price panel found.")
+            return "Không tìm thấy bảng giá hiện tại.", []
+
+        current_price_element = current_price_panel.find('h3')
+        if current_price_element is None:
+            print("No current price found.")
+            return "Không tìm thấy giá hiện tại.", []
+
+        current_price = current_price_element.get_text()
+
+        change_element = current_price_element.find_next_sibling('div', class_=re.compile("CommodityPrice"))
+        change = change_element.get_text()
+
+        return [current_price, change]
     except requests.RequestException as e:
         print(f"Error connecting to the website: {e}")
         return f"Lỗi khi kết nối đến trang web: {e}", []

@@ -4,6 +4,8 @@ from datetime import datetime, timedelta, timezone
 import os
 from dotenv import load_dotenv
 
+from services.fetcher import fetch_international_gold_prices
+
 # Configuration
 # Load environment variables from .env file
 load_dotenv()
@@ -126,15 +128,16 @@ def send_to_telegram(message, parse_mode="MarkdownV2"):
         print(f"Error sending message to Telegram: {e}")
 
 if __name__ == "__main__":
-    print("Starting gold price bot...")
-    buy_trend, data = fetch_gold_prices()
-    if data:
-        send_to_telegram(format_as_code_block(data))
-        user_tag = os.getenv('USER_TAG', '')
-        if buy_trend == 'increase':
-            send_to_telegram(f"Có nên mua vàng không má {user_tag} 🤔🤔🤔", parse_mode=None)
-        elif buy_trend == 'decrease':
-            send_to_telegram(f"✅ Mua vàng đi má {user_tag} 🧀🧀🧀", parse_mode=None)
-    else:
-        print(buy_trend)
-    print("Gold price bot finished.")
+    # print("Starting gold price bot...")
+    # buy_trend, data = fetch_gold_prices()
+    # if data:
+    #     send_to_telegram(format_as_code_block(data))
+    #     user_tag = os.getenv('USER_TAG', '')
+    #     if buy_trend == 'increase':
+    #         send_to_telegram(f"Có nên mua vàng không má {user_tag} 🤔🤔🤔", parse_mode=None)
+    #     elif buy_trend == 'decrease':
+    #         send_to_telegram(f"✅ Mua vàng đi má {user_tag} 🧀🧀🧀", parse_mode=None)
+    # else:
+    #     print(buy_trend)
+    # print("Gold price bot finished.")
+    fetch_international_gold_prices()

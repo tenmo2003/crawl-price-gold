@@ -17,9 +17,10 @@ USER_TAG = os.getenv("USER_TAG", "")
 
 # Các hằng số / đường dẫn cố định
 TELEGRAM_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-URL = "https://www.24h.com.vn/gia-vang-hom-nay-c425.html"
+DOMESTIC_URL = "https://www.24h.com.vn/gia-vang-hom-nay-c425.html"
+INTERNATIONAL_URL = "https://www.kitco.com/charts/gold"
 TIMEOUT = 15
 
-print("Loaded environment variables:")
-for key, value in os.environ.items():
-    print(f"{key}: {value}")
+# print("Loaded environment variables:")
+# for key, value in os.environ.items():
+#     print(f"{key}: {value}")
