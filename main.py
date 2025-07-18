@@ -6,19 +6,19 @@ from services.formatter import format_btmc_data, format_domestic_data, format_in
 from services.telegram_bot import send_to_telegram
 from utils.day_converter import convert_day_to_vietnamese
 
-def main(data_type):
+def main(data_types):
     print("Starting gold price bot...")
 
     message = ""
 
-    if data_type in ("domestic", "all"):
+    if "domestic" in data_types:
         buy_trend, data = fetch_domestic_gold_prices()
         if data:
             message += format_domestic_data(data, buy_trend)
         else:
             print(buy_trend)
 
-    if data_type in ("international", "all"):
+    if "international" in data_types:
         current_price, change = fetch_international_gold_prices()
         if change:
             if message:
@@ -27,14 +27,12 @@ def main(data_type):
         else:
             print(current_price)
 
-    if data_type in ("btmc", "all"):
+    if "btmc" in data_types:
         data, err = fetch_btmc_gold_prices()
         if not err:
             message += format_btmc_data(data)
         else:
             print(err)
-
-    # TODO: Add Bảo tín minh châu table
 
     if message:
         now = datetime.now(timezone.utc) + timedelta(hours=7)
@@ -51,10 +49,18 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Gold Price Bot")
     parser.add_argument(
         "--type",
+        nargs='+',
         choices=["domestic", "international", "btmc", "all"],
-        default="all",
-        help="Type of gold data to fetch (default: all)",
+        default=["all"],
+        help="Type(s) of gold data to fetch (default: all)",
     )
 
     args = parser.parse_args()
-    main(args.type)
+
+    # Handle special 'all' keyword
+    if "all" in args.type:
+        types = ["domestic", "international", "btmc"]
+    else:
+        types = args.type
+
+    main(types)
