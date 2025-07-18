@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 import os
 from dotenv import load_dotenv
 
-from services.fetcher import fetch_international_gold_prices
+from services.fetcher import fetch_btmc_gold_prices, fetch_domestic_gold_prices, fetch_international_gold_prices
 
 # Configuration
 # Load environment variables from .env file
@@ -140,4 +140,5 @@ if __name__ == "__main__":
     # else:
     #     print(buy_trend)
     # print("Gold price bot finished.")
-    fetch_international_gold_prices()
+    # fetch_international_gold_prices()
+    fetch_domestic_gold_prices()

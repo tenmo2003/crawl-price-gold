@@ -1,4 +1,6 @@
-def format_domestic_data_as_code_block(data, buy_trend):
+import textwrap
+
+def format_domestic_data(data, buy_trend):
     """
     Format danh sách dữ liệu giá vàng dưới dạng bảng (code block).
     """
@@ -54,3 +56,43 @@ def format_international_data(current_price, change):
             f"{escaped_change} {emoji}"
     )
     return message
+
+def format_btmc_data(data, col_widths=(14, 7, 7)):
+    """
+    Format danh sách dữ liệu giá vàng dưới dạng bảng (code block)
+    """
+    print("Formatting data as code block...")
+
+    # Define column widths
+    type_width, buy_width, sell_width = col_widths
+    line = f"+{'-' * (type_width + 2)}+{'-' * (buy_width + 2)}+{'-' * (sell_width + 2)}+"
+
+    # Header row
+    table = [
+        "Giá vàng BTMC:",
+        "",
+        line,
+        f"| {'Loại':<{type_width}} | {'Mua':<{buy_width}} | {'Bán':<{sell_width}} |",
+        line,
+    ]
+
+    for row in data:
+        gold_type = row[0]
+        buy_price = row[1]
+        sell_price = row[2]
+
+        # Wrap the gold_type to the column width
+        wrapped_type = textwrap.wrap(gold_type, width=type_width)
+        lines = max(1, len(wrapped_type))
+
+        for i in range(lines):
+            type_line = wrapped_type[i] if i < len(wrapped_type) else ""
+            buy_line = buy_price if i == 0 else ""
+            sell_line = sell_price if i == 0 else ""
+            table.append(
+                f"| {type_line:<{type_width}} | {buy_line:<{buy_width}} | {sell_line:<{sell_width}} |"
+            )
+        table.append(line)
+
+    print("Data formatted successfully.")
+    return "\n".join(table)

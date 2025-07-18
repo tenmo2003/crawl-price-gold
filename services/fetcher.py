@@ -1,7 +1,7 @@
 import re
 import requests
 from bs4 import BeautifulSoup
-from config import DOMESTIC_URL, INTERNATIONAL_URL, TIMEOUT
+from config import BTMC_URL, DOMESTIC_URL, INTERNATIONAL_URL, TIMEOUT
 
 def fetch_domestic_gold_prices():
     """
@@ -42,7 +42,10 @@ def fetch_domestic_gold_prices():
                 buy_change_span = cols[1].find('span', {'class': ['colorGreen', 'colorRed']})
                 if buy_change_span:
                     buy_change = buy_change_span.text.strip()
-                    if 'colorGreen' in buy_change_span['class']:
+                    if not buy_change:
+                        buy_change = ""
+                        buy_symbol = ""
+                    elif 'colorGreen' in buy_change_span['class']:
                         buy_symbol = "▲"
                     elif 'colorRed' in buy_change_span['class']:
                         buy_symbol = "▼"
@@ -61,7 +64,10 @@ def fetch_domestic_gold_prices():
                 sell_change_span = cols[2].find('span', {'class': ['colorGreen', 'colorRed']})
                 if sell_change_span:
                     sell_change = sell_change_span.text.strip()
-                    if 'colorGreen' in sell_change_span['class']:
+                    if not sell_change:
+                        sell_change = ""
+                        sell_symbol = ""
+                    elif 'colorGreen' in sell_change_span['class']:
                         sell_symbol = "▲"
                     elif 'colorRed' in sell_change_span['class']:
                         sell_symbol = "▼"
@@ -134,3 +140,41 @@ def fetch_international_gold_prices():
     except requests.RequestException as e:
         print(f"Error connecting to the website: {e}")
         return f"Lỗi khi kết nối đến trang web: {e}", []
+
+def fetch_btmc_gold_prices():
+    print("Fetching BTMC Gold Prices...")
+    try:
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        }
+        response = requests.get(BTMC_URL, timeout=TIMEOUT, headers=headers)
+        response.raise_for_status()
+        print("Successfully fetched data from website.")
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        price_table = soup.find('table', class_='bd_price_home')
+        if not price_table:
+            print("No current price panel found.")
+            return ["", "Không tìm thấy bảng giá hiện tại"]
+
+        table_rows = price_table.find_all('tr')
+        if len(table_rows) < 2:
+            print("No rows found in the data table.")
+            return ["", "Không tìm thấy bảng giá hiện tại"]
+
+        data = []
+        for row in table_rows[1:]:
+            shift = 0
+            cols = row.find_all('td')
+            if cols[0].get_attribute_list('rowspan'):
+                shift = 1
+            gold_type = cols[0+shift].get_text().strip()
+            buy_price = cols[2+shift].get_text().strip()
+            sell_price = cols[3+shift].get_text().strip()
+            data.append([gold_type, buy_price, sell_price])
+
+        return [data, ""]
+    except requests.RequestException as e:
+        print(f"Error connecting to the website: {e}")
+        return ["", f"Lỗi khi kết nối đến trang web: {e}"]
