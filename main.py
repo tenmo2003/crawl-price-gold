@@ -30,6 +30,8 @@ def main(data_types):
     if "btmc" in data_types:
         data, err = fetch_btmc_gold_prices()
         if not err:
+            if message:
+                message += "\n\n"
             message += format_btmc_data(data)
         else:
             print(err)
