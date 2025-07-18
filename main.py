@@ -28,11 +28,11 @@ def main(data_types):
             print(current_price)
 
     if "btmc" in data_types:
-        data, err = fetch_btmc_gold_prices()
+        data, status, err = fetch_btmc_gold_prices()
         if not err:
             if message:
                 message += "\n\n"
-            message += format_btmc_data(data)
+            message += format_btmc_data(data, status)
         else:
             print(err)
 

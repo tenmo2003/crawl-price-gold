@@ -164,6 +164,7 @@ def fetch_btmc_gold_prices():
             return ["", "Không tìm thấy bảng giá hiện tại"]
 
         data = []
+        status = ""
         for row in table_rows[1:]:
             shift = 0
             cols = row.find_all('td')
@@ -172,9 +173,22 @@ def fetch_btmc_gold_prices():
             gold_type = cols[0+shift].get_text().strip()
             buy_price = cols[2+shift].get_text().strip()
             sell_price = cols[3+shift].get_text().strip()
+            try:
+                status_img_src = cols[4+shift].find('img').get_attribute_list('src')[0]
+                if "right_arrow" in status_img_src:
+                    status = "still"
+                elif "up_arrow" in status_img_src:
+                    status = "increase"
+                elif "down_arrow" in status_img_src:
+                    status = "decrease"
+            except Exception as e:
+                # i dont need ya then
+                print(e)
+                pass
+
             data.append([gold_type, buy_price, sell_price])
 
-        return [data, ""]
+        return [data, status, ""]
     except requests.RequestException as e:
         print(f"Error connecting to the website: {e}")
         return ["", f"Lỗi khi kết nối đến trang web: {e}"]

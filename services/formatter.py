@@ -57,7 +57,7 @@ def format_international_data(current_price, change):
     )
     return message
 
-def format_btmc_data(data, col_widths=(12, 6, 6)):
+def format_btmc_data(data, status, col_widths=(12, 6, 6)):
     """
     Format danh sách dữ liệu giá vàng dưới dạng bảng (code block)
     """
@@ -67,9 +67,17 @@ def format_btmc_data(data, col_widths=(12, 6, 6)):
     type_width, buy_width, sell_width = col_widths
     line = f"+{'-' * (type_width + 2)}+{'-' * (buy_width + 2)}+{'-' * (sell_width + 2)}+"
 
+    emoji = ""
+    if status == "increase":
+        emoji = "🟢"
+    elif status == "decrease":
+        emoji = "🔴"
+    elif status == "still":
+        emoji = "⚪"
+
     # Header row
     table = [
-        "Giá vàng BTMC:",
+        f"Giá vàng BTMC: {emoji}",
         "",
         line,
         f"| {'Loại':<{type_width}} | {'Mua':<{buy_width}} | {'Bán':<{sell_width}} |",
