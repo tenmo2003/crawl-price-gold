@@ -57,7 +57,7 @@ def format_international_data(current_price, change):
     )
     return message
 
-def format_btmc_data(data, col_widths=(14, 7, 7)):
+def format_btmc_data(data, col_widths=(12, 6, 6)):
     """
     Format danh sách dữ liệu giá vàng dưới dạng bảng (code block)
     """
@@ -89,6 +89,8 @@ def format_btmc_data(data, col_widths=(14, 7, 7)):
             type_line = wrapped_type[i] if i < len(wrapped_type) else ""
             buy_line = buy_price if i == 0 else ""
             sell_line = sell_price if i == 0 else ""
+            buy_line = buy_line if buy_line.lower() != "liên hệ" else "LH"
+            sell_line = sell_line if sell_line.lower() != "liên hệ" else "LH"
             table.append(
                 f"| {type_line:<{type_width}} | {buy_line:<{buy_width}} | {sell_line:<{sell_width}} |"
             )
