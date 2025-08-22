@@ -130,13 +130,13 @@ def fetch_international_gold_prices():
         current_price_element = current_price_panel.find('h3')
         if current_price_element is None:
             print("No current price found.")
-            return "Không tìm thấy giá hiện tại.", []
+            return "Không tìm thấy giá hiện tại.", [], None, None
 
         current_price_in_usd = current_price_element.get_text()
 
         converter = USDVNDConverter()
 
-        current_price_in_vnd = converter.convert_usd_to_vnd(int(current_price_in_usd))
+        current_price_in_vnd = converter.convert_usd_to_vnd(float(current_price_in_usd))
         if current_price_in_vnd is not None:
             current_price_in_vnd /= 0.829 # convert from ounce to Tael
 
@@ -148,7 +148,7 @@ def fetch_international_gold_prices():
         return [current_price_in_usd, change, current_price_in_vnd, exchange_rate_to_vnd]
     except requests.RequestException as e:
         print(f"Error connecting to the website: {e}")
-        return f"Lỗi khi kết nối đến trang web: {e}", [], "", ""
+        return f"Lỗi khi kết nối đến trang web: {e}", [], None, None
 
 def fetch_btmc_gold_prices():
     print("Fetching BTMC Gold Prices...")
