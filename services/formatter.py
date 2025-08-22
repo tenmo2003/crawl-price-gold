@@ -35,12 +35,12 @@ def format_domestic_data(data, buy_trend):
     print("Data formatted successfully.")
     return "\n".join(table)
 
-def format_international_data(current_price, change):
+def format_international_data(current_price_in_usd, change, current_price_in_vnd, exchange_rate_to_vnd):
     def escape(text):
         special_chars = r'_*\[\]()~`>#+-=|{}.!'
         return ''.join(['\\' + c if c in special_chars else c for c in text])
 
-    escaped_price = escape(current_price)
+    escaped_price = escape(current_price_in_usd)
     escaped_change = escape(change)
 
     if change.startswith('+'):
@@ -52,10 +52,17 @@ def format_international_data(current_price, change):
 
     message = (
             "Giá vàng quốc tế (USD): \n\n"
-            f"{escaped_price}\n"
+            f"{escaped_price} / 1 oz\n"
             f"{escaped_change} {emoji}"
     )
-    return message
+
+    exchange_message = (
+            "\n\nQuy đổi:\n"
+            f"1 USD = {exchange_rate_to_vnd} VND"
+            f"{current_price_in_vnd} / 1 lượng"
+            ) if current_price_in_vnd is not None else ""
+
+    return message + exchange_message
 
 def format_btmc_data(data, status, col_widths=(12, 6, 6)):
     """

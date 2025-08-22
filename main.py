@@ -19,13 +19,13 @@ def main(data_types):
             print(buy_trend)
 
     if "international" in data_types:
-        current_price, change = fetch_international_gold_prices()
+        current_price_in_usd, change, current_price_in_vnd, exchange_rate_to_vnd = fetch_international_gold_prices()
         if change:
             if message:
                 message += "\n\n"
-            message += format_international_data(current_price, change)
+            message += format_international_data(current_price_in_usd, change, current_price_in_vnd, exchange_rate_to_vnd)
         else:
-            print(current_price)
+            print(current_price_in_usd)
 
     if "btmc" in data_types:
         data, status, err = fetch_btmc_gold_prices()

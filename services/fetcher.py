@@ -2,6 +2,7 @@ import re
 import requests
 from bs4 import BeautifulSoup
 from config import BTMC_URL, DOMESTIC_URL, INTERNATIONAL_URL, TIMEOUT
+from services.vnd_usd_converter import USDVNDConverter
 
 def fetch_domestic_gold_prices():
     """
@@ -131,15 +132,23 @@ def fetch_international_gold_prices():
             print("No current price found.")
             return "Không tìm thấy giá hiện tại.", []
 
-        current_price = current_price_element.get_text()
+        current_price_in_usd = current_price_element.get_text()
+
+        converter = USDVNDConverter()
+
+        current_price_in_vnd = converter.convert_usd_to_vnd(int(current_price_in_usd))
+        if current_price_in_vnd is not None:
+            current_price_in_vnd /= 0.829 # convert from ounce to Tael
+
+        exchange_rate_to_vnd = converter.get_exchange_rate()
 
         change_element = current_price_element.find_next_sibling('div', class_=re.compile("CommodityPrice"))
         change = change_element.get_text()
 
-        return [current_price, change]
+        return [current_price_in_usd, change, current_price_in_vnd, exchange_rate_to_vnd]
     except requests.RequestException as e:
         print(f"Error connecting to the website: {e}")
-        return f"Lỗi khi kết nối đến trang web: {e}", []
+        return f"Lỗi khi kết nối đến trang web: {e}", [], "", ""
 
 def fetch_btmc_gold_prices():
     print("Fetching BTMC Gold Prices...")
