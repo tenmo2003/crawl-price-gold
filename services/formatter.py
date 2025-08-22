@@ -59,7 +59,7 @@ def format_international_data(current_price_in_usd, change, current_price_in_vnd
     exchange_message = (
             "\n\nQuy đổi:\n"
             f"1 USD = {exchange_rate_to_vnd} VND\n"
-            f"{current_price_in_vnd:,} / 1 lượng"
+            f"{round(current_price_in_vnd, 0):,} / 1 lượng"
             ) if current_price_in_vnd is not None else ""
 
     return message + exchange_message
