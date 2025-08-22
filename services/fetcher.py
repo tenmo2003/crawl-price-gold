@@ -133,6 +133,7 @@ def fetch_international_gold_prices():
             return "Không tìm thấy giá hiện tại.", [], None, None
 
         current_price_in_usd = current_price_element.get_text()
+        current_price_in_usd = current_price_in_usd.replace(",", "")
 
         converter = USDVNDConverter()
 
