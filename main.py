@@ -11,16 +11,6 @@ def main(data_types):
 
     message = ""
 
-    if "domestic" in data_types:
-        try:
-            buy_trend, data = fetch_domestic_gold_prices()
-            if data:
-                message += format_domestic_data(data, buy_trend)
-            else:
-                print(buy_trend)
-        except Exception as e:
-            print(f"Domestic fetch failed: {e}")
-
     if "international" in data_types:
         try:
             current_price_in_usd, change, current_price_in_vnd, exchange_rate_to_vnd = fetch_international_gold_prices()
@@ -32,6 +22,18 @@ def main(data_types):
                 print(current_price_in_usd)
         except Exception as e:
             print(f"International fetch failed: {e}")
+
+    if "domestic" in data_types:
+        try:
+            buy_trend, data = fetch_domestic_gold_prices()
+            if data:
+                if message:
+                    message += "\n\n"
+                message += format_domestic_data(data, buy_trend)
+            else:
+                print(buy_trend)
+        except Exception as e:
+            print(f"Domestic fetch failed: {e}")
 
     if "btmc" in data_types:
         try:

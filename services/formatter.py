@@ -1,13 +1,33 @@
 import textwrap
 
-def format_domestic_data(data, buy_trend):
-    """
-    Format danh sách dữ liệu giá vàng dưới dạng bảng (code block).
-    """
+def _split_price_and_change(value):
+    v = (value or "").strip()
+    if not v:
+        return "", ""
+
+    v = " ".join(v.split())
+
+    if "▲" in v:
+        price, rest = v.split("▲", 1)
+        return price.strip(), ("▲" + rest.strip()).replace(" ", "")
+    if "▼" in v:
+        price, rest = v.split("▼", 1)
+        return price.strip(), ("▼" + rest.strip()).replace(" ", "")
+
+    parts = v.split(" ")
+    if len(parts) >= 2 and parts[-1][:1] in ("+", "-"):
+        return " ".join(parts[:-1]).strip(), parts[-1].strip()
+
+    return v, ""
+
+
+def format_domestic_data(data, buy_trend, col_widths=(10, 7, 7)):
+    """Format danh sách dữ liệu giá vàng dưới dạng bảng (code block)."""
     print("Formatting data as code block...")
 
-    header = ["Loại", "Mua", "Bán"]
-    line = "+------+--------------+--------------+"
+    type_width, buy_width, sell_width = col_widths
+    line = f"+{'-' * (type_width + 2)}+{'-' * (buy_width + 2)}+{'-' * (sell_width + 2)}+"
+
     if buy_trend == 'increase':
         emoji = "🟢"
     elif buy_trend == 'decrease':
@@ -19,18 +39,37 @@ def format_domestic_data(data, buy_trend):
         f"Giá vàng trong nước: {emoji}",
         "",
         line,
-        f"| {header[0]:<4} | {header[1]:<12} | {header[2]:<12} |",
+        f"| {'Loại':<{type_width}} | {'Mua':<{buy_width}} | {'Bán':<{sell_width}} |",
         line,
     ]
 
     for row in data:
-        # Cắt chuỗi cho an toàn nếu quá dài
-        gold_type = row[0][:4]
-        buy_price = row[1]
-        sell_price = row[2]
-        table.append(f"| {gold_type:<4} | {buy_price:<12} | {sell_price:<12} |")
+        gold_type = (row[0] if len(row) > 0 else "")
+        buy_value = row[1] if len(row) > 1 else ""
+        sell_value = row[2] if len(row) > 2 else ""
 
-    table.append(line)
+        gold_type = (gold_type or "").strip()
+        buy_price, buy_change = _split_price_and_change(buy_value)
+        sell_price, sell_change = _split_price_and_change(sell_value)
+
+        buy_price = "LH" if buy_price.lower() == "liên hệ" else buy_price
+        sell_price = "LH" if sell_price.lower() == "liên hệ" else sell_price
+
+        buy_price = (buy_price or "")[:buy_width]
+        sell_price = (sell_price or "")[:sell_width]
+        buy_change = (buy_change or "")[:buy_width]
+        sell_change = (sell_change or "")[:sell_width]
+
+        wrapped_type = textwrap.wrap(gold_type, width=type_width) or [""]
+        for i, type_line in enumerate(wrapped_type):
+            buy_cell = buy_price if i == 0 else ""
+            sell_cell = sell_price if i == 0 else ""
+            table.append(f"| {type_line:<{type_width}} | {buy_cell:<{buy_width}} | {sell_cell:<{sell_width}} |")
+
+        if buy_change or sell_change:
+            table.append(f"| {'':<{type_width}} | {buy_change:<{buy_width}} | {sell_change:<{sell_width}} |")
+
+        table.append(line)
 
     print("Data formatted successfully.")
     return "\n".join(table)
