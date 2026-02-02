@@ -106,10 +106,11 @@ def fetch_domestic_gold_prices():
 
 def fetch_international_gold_prices():
     """
-    Lấy dữ liệu giá vàng quốc tế
-    Trả về bộ (buy_trend, data_list).
-    - current_price: giá hiện tại
-    - change: thay đổi giá
+    Lấy dữ liệu giá vàng quốc tế.
+
+    Trả về bộ (current_price_in_usd_or_err, change, current_price_in_vnd, exchange_rate_to_vnd)
+    - current_price_in_usd_or_err: giá hiện tại (USD) hoặc thông báo lỗi
+    - change: thay đổi giá (string) hoặc None nếu không lấy được
     """
     print("Fetching international gold prices...")
     try:
@@ -125,12 +126,12 @@ def fetch_international_gold_prices():
         current_price_panel = soup.find('div', class_='border-b border-ktc-borders')
         if not current_price_panel:
             print("No current price panel found.")
-            return "Không tìm thấy bảng giá hiện tại.", []
+            return "Không tìm thấy bảng giá hiện tại.", None, None, None
 
         current_price_element = current_price_panel.find('h3')
         if current_price_element is None:
             print("No current price found.")
-            return "Không tìm thấy giá hiện tại.", [], None, None
+            return "Không tìm thấy giá hiện tại.", None, None, None
 
         current_price_in_usd = current_price_element.get_text()
         current_price_in_usd = current_price_in_usd.replace(",", "")
@@ -144,12 +145,19 @@ def fetch_international_gold_prices():
         exchange_rate_to_vnd = converter.get_exchange_rate()
 
         change_element = current_price_element.find_next_sibling('div', class_=re.compile("CommodityPrice"))
+        if change_element is None:
+            print("No change element found.")
+            return "Không tìm thấy thay đổi giá.", None, current_price_in_vnd, exchange_rate_to_vnd
+
         change = change_element.get_text()
 
-        return [current_price_in_usd, change, current_price_in_vnd, exchange_rate_to_vnd]
+        return current_price_in_usd, change, current_price_in_vnd, exchange_rate_to_vnd
     except requests.RequestException as e:
         print(f"Error connecting to the website: {e}")
-        return f"Lỗi khi kết nối đến trang web: {e}", [], None, None
+        return f"Lỗi khi kết nối đến trang web: {e}", None, None, None
+    except Exception as e:
+        print(f"Error parsing international gold prices: {e}")
+        return f"Lỗi khi lấy dữ liệu giá vàng quốc tế: {e}", None, None, None
 
 def fetch_btmc_gold_prices():
     print("Fetching BTMC Gold Prices...")
@@ -166,12 +174,12 @@ def fetch_btmc_gold_prices():
         price_table = soup.find('table', class_='bd_price_home')
         if not price_table:
             print("No current price panel found.")
-            return ["", "Không tìm thấy bảng giá hiện tại"]
+            return [], "", "Không tìm thấy bảng giá hiện tại"
 
         table_rows = price_table.find_all('tr')
         if len(table_rows) < 2:
             print("No rows found in the data table.")
-            return ["", "Không tìm thấy bảng giá hiện tại"]
+            return [], "", "Không tìm thấy bảng giá hiện tại"
 
         data = []
         status = ""
@@ -199,7 +207,10 @@ def fetch_btmc_gold_prices():
 
             data.append([gold_type, buy_price, sell_price])
 
-        return [data, status, ""]
+        return data, status, ""
     except requests.RequestException as e:
         print(f"Error connecting to the website: {e}")
-        return ["", f"Lỗi khi kết nối đến trang web: {e}"]
+        return [], "", f"Lỗi khi kết nối đến trang web: {e}"
+    except Exception as e:
+        print(f"Error parsing BTMC gold prices: {e}")
+        return [], "", f"Lỗi khi lấy dữ liệu BTMC: {e}"
