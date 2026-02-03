@@ -9,3 +9,6 @@ __pycache__/
 # Virtual environment
 venv/
 .venv/
+
+# Local run state
+.state/
