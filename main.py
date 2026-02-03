@@ -100,7 +100,7 @@ def _build_sections(data_types):
     return sections
 
 
-def _compose_message(data_types, sections):
+def _compose_message(data_types, sections, show_header=False):
     now = datetime.now(timezone.utc) + timedelta(hours=7)
     current_time = now.strftime("%H:%M:%S")
     current_day = convert_day_to_vietnamese(now.strftime("%A"))
@@ -112,7 +112,7 @@ def _compose_message(data_types, sections):
         "\n"
     ]
     body = "\n\n".join([sections[t] for t in data_types if t in sections])
-    message_body = "\n".join(header) + body
+    message_body = "\n".join(header + [body] if show_header else [body])
     return "```" + f"{current_time}\n" + f"{current_day} {current_date}\n" + message_body + "```"
 
 
@@ -153,7 +153,7 @@ def _handle_updates():
         if not sections:
             continue
 
-        payload = _compose_message(requested, sections)
+        payload = _compose_message(requested, sections, show_header=True)
         send_to_telegram(payload, chat_id=chat_id)
 
     if max_update_id and max_update_id != last_update_id:
