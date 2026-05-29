@@ -13,6 +13,10 @@ class USDVNDConverter:
         Args:
             timeout (int): Request timeout in seconds (default: 10)
         """
+        # Primary source: Vietcombank exchange-rate API (powers the public
+        # Ty-gia page: https://www.vietcombank.com.vn/vi-VN/KHCN/Cong-cu-Tien-ich/Ty-gia)
+        self.vietcombank_url = "https://www.vietcombank.com.vn/api/exchangerates?date=now"
+        # Fallback source: investing.com (frequently 403s, kept as backup)
         self.url = "https://vn.investing.com/currencies/usd-vnd"
         self.timeout = timeout
         self.headers = {
@@ -21,6 +25,37 @@ class USDVNDConverter:
         self._cached_rate = None
         self._cache_timestamp = None
         self._cache_duration = 300  # Cache for 5 minutes
+        self._last_source = None  # URL of the source that produced the current rate
+
+    def _fetch_from_vietcombank(self) -> Optional[float]:
+        """
+        Fetch the USD/VND transfer rate from the Vietcombank exchange-rate API.
+
+        Returns:
+            float: USD transfer rate if successful, None otherwise
+        """
+        try:
+            response = requests.get(
+                self.vietcombank_url,
+                headers=self.headers,
+                timeout=self.timeout
+            )
+            response.raise_for_status()
+            payload = response.json()
+
+            for entry in payload.get('Data', []):
+                if entry.get('currencyCode') == 'USD':
+                    # Use the transfer (chuyển khoản) rate as the reference rate
+                    rate_str = str(entry.get('transfer', '')).replace(',', '')
+                    rate = float(rate_str)
+                    # Sanity check: USD/VND rate should be between 20,000 and 30,000
+                    if 20000 <= rate <= 30000:
+                        return rate
+                    break
+            return None
+        except (requests.RequestException, ValueError, KeyError) as e:
+            print(f"Error fetching rate from Vietcombank: {e}")
+            return None
 
     def _fetch_page_content(self) -> Optional[str]:
         """
@@ -113,27 +148,32 @@ class USDVNDConverter:
         if use_cache and self._is_cache_valid():
             return self._cached_rate
 
-        html_content = self._fetch_page_content()
-        if not html_content:
-            # Return cached rate as fallback
-            if self._cached_rate:
-                print("Using cached rate due to fetch failure")
-                return self._cached_rate
-            return None
-
-        rate = self._extract_exchange_rate(html_content)
+        # Primary strategy: Vietcombank API
+        rate = self._fetch_from_vietcombank()
         if rate:
-            # Update cache
-            self._cached_rate = rate
-            self._cache_timestamp = time.time()
+            self._update_cache(rate, self.vietcombank_url)
             return rate
 
-        # Return cached rate as fallback
+        # Fallback strategy: investing.com scraping
+        html_content = self._fetch_page_content()
+        if html_content:
+            rate = self._extract_exchange_rate(html_content)
+            if rate:
+                self._update_cache(rate, self.url)
+                return rate
+
+        # Last resort: return cached rate if available
         if self._cached_rate:
-            print("Using cached rate due to extraction failure")
+            print("Using cached rate due to fetch failure from all sources")
             return self._cached_rate
 
         return None
+
+    def _update_cache(self, rate: float, source: str) -> None:
+        """Store the freshly fetched rate and remember its source."""
+        self._cached_rate = rate
+        self._cache_timestamp = time.time()
+        self._last_source = source
 
     def _is_cache_valid(self) -> bool:
         """Check if cached rate is still valid"""
@@ -196,7 +236,7 @@ class USDVNDConverter:
             'timestamp': time.time(),
             'cached': cache_valid,
             'cache_age': time.time() - self._cache_timestamp if self._cache_timestamp else None,
-            'source': self.url
+            'source': self._last_source or self.vietcombank_url
         }
 
 

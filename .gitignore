@@ -12,3 +12,8 @@ venv/
 
 # Local run state
 .state/
+# ClaudeKit
+.claude/
+docs/
+plans/
+CLAUDE.md
